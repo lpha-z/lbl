@@ -84,16 +84,23 @@ public:
 	/* implicit */ constexpr xintN_t( uint_t x ) noexcept : val( x << Offset ) {}
 	template<class T, std::enable_if_t<std::is_integral_v<T> && sizeof(T) <= sizeof(uint_t), std::nullptr_t> = nullptr>
 	/* implicit */ constexpr xintN_t( T      x ) noexcept : xintN_t( static_cast<uint_t>(x) ) {}
-	template<std::size_t M, bool IsSigned_M, std::enable_if_t<!((IsSigned && !IsSigned_M) || M < N), std::nullptr_t> = nullptr>
+	template<std::size_t M, bool IsSigned_M, std::enable_if_t<!((IsSigned && !IsSigned_M) || N < M), std::nullptr_t> = nullptr>
 	/* implicit */ constexpr xintN_t( const xintN_t<M, IsSigned_M>& x ) noexcept : xintN_t( static_cast<uint_t>(x) ) {}
-	template<std::size_t M, bool IsSigned_M, std::enable_if_t<((IsSigned && !IsSigned_M) || M < N), std::nullptr_t> = nullptr>
+	template<std::size_t M, bool IsSigned_M, std::enable_if_t<((IsSigned && !IsSigned_M) || N < M), std::nullptr_t> = nullptr>
 	explicit constexpr xintN_t( const xintN_t<M, IsSigned_M>& x ) noexcept : xintN_t( static_cast<uint_t>(x) ) {}
 	constexpr xintN_t( const xintN_t&  ) noexcept = default;
 	constexpr xintN_t(       xintN_t&& ) noexcept = default;
 	constexpr xintN_t& operator=( const xintN_t&  ) & noexcept = default;
 	constexpr xintN_t& operator=(       xintN_t&& ) & noexcept = default;
 
-	/* implicit */ constexpr operator int_t()  const noexcept { return bit_cast<int_t>(val) < 0 ? bit_cast<int_t>( ~(~val >> Offset) ) : bit_cast<int_t>(val >> Offset); }
+	using convert_t = std::conditional_t<IsSigned, int_t, uint_t>;
+	/* implicit */ constexpr operator convert_t()  const noexcept {
+		if constexpr ( IsSigned ) {
+			return bit_cast<int_t>(val) < 0 ? bit_cast<int_t>( ~(~val >> Offset) ) : bit_cast<int_t>(val >> Offset);
+		} else {
+			return val >> Offset;
+		}
+	}
 
 	constexpr xintN_t& operator|=( const xintN_t& rhs ) & noexcept { val |= rhs.val; return *this; }
 	constexpr xintN_t& operator^=( const xintN_t& rhs ) & noexcept { val ^= rhs.val; return *this; }

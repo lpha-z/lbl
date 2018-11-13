@@ -16,7 +16,7 @@ int main() {
     uintN_t<36> x { 1ull << 35 };
     intN_t<31>  y { 32 - 999 * 999 * 999 };
     uintN_t<13> a = 0;
-    intN_t<42>  b = ~0ull >> 40
+    intN_t<42>  b = ~0ull >> 40;
     if( b ) {
         uint64_t c = a;
         int64_t  d = b;
